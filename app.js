@@ -53,8 +53,8 @@ const client = require('twilio')(accountSid, authToken);
 //send otp to customer on mobile confirmation
 //send otp to customer for recieving package 
 
-
-app.listen('5000',(err)=>{
+const PORT=process.env.port||5000
+app.listen(PORT,(err)=>{
     if(err){
         console.log(err)
     }else{
