@@ -5,6 +5,9 @@ const OrderSchema=new mongoose.Schema({
     Paymentstatus:{
         type:String
     },
+    description:{
+        type:String
+    },
     userid:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
