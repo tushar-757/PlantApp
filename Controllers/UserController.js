@@ -129,7 +129,7 @@ async OrderConfirmation(req,res){
        return res.status(401).json({message:"user not exist"})
     }
    }catch{
-
+      return res.status(404).json({message:error})
    }
 },
 async GetUserOrder(req,res){
