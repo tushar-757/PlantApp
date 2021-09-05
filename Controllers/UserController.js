@@ -112,7 +112,7 @@ module.exports={
 async OrderConfirmation(req,res){
    const user=req.user;
    const {paymentStatus,description}=req.body;
-   const {order_id}=req.headers;
+   const {order_id}=req.body.headers;
    try{
       if(user){
          const order=Order.findById(order_id).exec(function (err, doc) {
