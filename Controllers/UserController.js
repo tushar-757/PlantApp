@@ -113,6 +113,7 @@ async OrderConfirmation(req,res){
    const user=req.user;
    const {paymentStatus,description}=req.body;
    const {order_id}=req.body.headers;
+   console.log(paymentStatus,description,order_id)
    try{
       if(user){
          const order=Order.findById(order_id).exec(function (err, doc) {
@@ -130,7 +131,7 @@ async OrderConfirmation(req,res){
        return res.status(401).json({message:"user not exist"})
     }
    }catch{
-      return res.status(404).json({message:error})
+      return res.status(401).json({message:error})
    }
 },
 async GetUserOrder(req,res){
