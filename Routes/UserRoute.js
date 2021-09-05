@@ -11,8 +11,9 @@ router.get("/",(req,res)=>{
 })
 
 //create order id for razorpay
-router.post("/orders",auth,UserController.CreateOrder);
+router.post("/createOrder",auth,UserController.CreateOrder);
 router.post("/GetOrders",auth,UserController.GetUserOrder);
+router.post("/OrderConfirmation",auth,UserController.OrderConfirmation);
 
 //call back handler for razorpay
 //save all info in plan creted with user with user_id

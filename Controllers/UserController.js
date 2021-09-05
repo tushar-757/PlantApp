@@ -77,8 +77,8 @@ module.exports={
   },
   async CreateOrder(req,res){
      const user=req.user;
-     const {Paymentstatus,total,products}=req.body
-     const {user_id}=req.headers;
+     const {total,products}=req.body
+     const {user_id}=req.body.headers;
      const dataitem=[]
      await products.map(async(data)=>{
        const item=await Item.findById(data)
@@ -93,7 +93,7 @@ module.exports={
    try{
       ///for better authentication check with paymentToken
           if(user){
-               const order=await Order.create({Paymentstatus,userid:user_id,total})
+               const order=await Order.create({userid:user_id,total})
                 const use=await User.findById(user._id).populate('orders').exec()
                 Order.findById(order._id).exec(function (err, doc) {
                     doc["productsdata"]=dataitem
@@ -108,6 +108,29 @@ module.exports={
        }catch(error){
            return res.status(404).json({message:error})
       }
+},
+async OrderConfirmation(req,res){
+   const user=req.user;
+   const {paymentStatus,description}=req.body;
+   const {order_id}=req.headers;
+   try{
+      if(user){
+         const order=Order.findById(order_id).exec(function (err, doc) {
+            doc["paymentStatus"]=paymentStatus
+            console.log(doc)
+            doc.save()
+          })
+          if(paymentStatus){
+             return res.status(200).json({message:"order confirmed"});
+          }else{
+            return res.status(200).json({message:"payment failed"});
+          }
+    }else{
+       return res.status(401).json({message:"user not exist"})
+    }
+   }catch{
+
+   }
 },
 async GetUserOrder(req,res){
    try{
