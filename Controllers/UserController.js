@@ -121,7 +121,7 @@ async OrderConfirmation(req,res){
             console.log(doc)
             doc.save()
           })
-          if(paymentStatus){
+          if(paymentStatus==='success'){
              return res.status(200).json({message:"order confirmed"});
           }else{
             return res.status(200).json({message:"payment failed"});
