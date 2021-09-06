@@ -12,7 +12,7 @@ router.get("/",(req,res)=>{
 
 //create order id for razorpay
 router.post("/createOrder",auth,UserController.CreateOrder);
-router.post("/GetOrders",auth,UserController.GetUserOrder);
+router.get("/GetOrders",auth,UserController.GetUserOrder);
 router.post("/OrderConfirmation",auth,UserController.OrderConfirmation);
 
 //call back handler for razorpay
