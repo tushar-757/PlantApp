@@ -117,13 +117,13 @@ async OrderConfirmation(req,res){
    try{
       if(user){
          const order=await Order.findById(order_id)
-         order.Paymentstatus=paymentStatus
+         order.Paymentstatus='failed'
          order.description=description
          await order.save();
          return res.json(order);
         }
        return res.status(401).json({message:"user not exist"})
-   }catch{
+   }catch(error){
       return res.status(401).json({message:error})
    }
 },
