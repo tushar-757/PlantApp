@@ -118,9 +118,9 @@ async OrderConfirmation(req,res){
       if(user){
          const order=Order.findById(order_id).exec(function (err, doc) {
             if (err) {
-               return done(err);
-           }
-            doc["Paymentstatus"]=req.body?.paymentStatus
+                return done(err);
+            }
+            doc["Paymentstatus"]=paymentStatus
             doc["description"]=description
             console.log(doc)
             doc.save()
