@@ -120,7 +120,7 @@ async OrderConfirmation(req,res){
             if (err) {
                return done(err);
            }
-            doc["Paymentstatus"]=paymentStatus
+            doc["Paymentstatus"]=req.body?.paymentStatus
             doc["description"]=description
             console.log(doc)
             doc.save()
