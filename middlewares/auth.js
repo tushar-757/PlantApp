@@ -9,6 +9,9 @@ const auth=async (req,res,next)=>{
         //for postman = req.header("Authorization").replace("Bearer ",'')
         //for server = req.body.headers.Authorization.replace("Bearer ",'');
        const token= req.body.headers.Authorization.replace("Bearer ",'');
+       if(token===undefined){
+        const token= req.headers.authorization.replace("Bearer ",'');
+       }
        console.log(token+"token")
        const decode=jwt.verify(token,process.env.Secret_Key);
     
