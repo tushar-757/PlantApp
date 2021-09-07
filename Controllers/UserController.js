@@ -93,7 +93,7 @@ module.exports={
    try{
       ///for better authentication check with paymentToken
           if(user){
-               const order=await Order.create({userid:user_id,total})
+               const order=await Order.create({Paymentstatus:"pending",userid:user_id,total})
                 const use=await User.findById(user._id).populate('orders').exec()
                 Order.findById(order._id).exec(function (err, doc) {
                     doc["productsdata"]=dataitem
@@ -117,6 +117,9 @@ async OrderConfirmation(req,res){
    try{
       if(user){
          const order=Order.findById(order_id).exec(function (err, doc) {
+            if (err) {
+               return done(err);
+           }
             doc["Paymentstatus"]=paymentStatus
             doc["description"]=description
             console.log(doc)
