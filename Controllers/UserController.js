@@ -116,23 +116,13 @@ async OrderConfirmation(req,res){
    console.log(paymentStatus,description,order_id)
    try{
       if(user){
-         const order=Order.findById(order_id).exec(function (err, doc) {
-            if (err) {
-                return done(err);
-            }
-            doc["Paymentstatus"]=paymentStatus
-            doc["description"]=description
-            console.log(doc)
-            doc.save()
-          })
-          if(paymentStatus==='success'){
-             return res.status(200).json({message:"order confirmed"});
-          }else{
-            return res.status(200).json({message:"payment failed"});
-          }
-    }else{
+         const order=await Order.findById(order_id)
+         order.Paymentstatus=paymentStatus
+         order.description=description
+         await order.save();
+         return res.json(order);
+        }
        return res.status(401).json({message:"user not exist"})
-    }
    }catch{
       return res.status(401).json({message:error})
    }
@@ -163,3 +153,12 @@ async GetUserOrder(req,res){
    //    console.log(doc)
    //    if(doc.status='captured'){
  //BY CHECKING req.razorpay_order_id,req.razorpay_payment_id and req.razorpay_signature
+//  .exec(function (err, doc) {
+//    if (err) {
+//        return done(err);
+//    }
+//    doc["Paymentstatus"]=paymentStatus
+//    doc["description"]=description
+//    console.log(doc)
+//    doc.save()
+//  })
