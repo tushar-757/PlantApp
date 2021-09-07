@@ -4,13 +4,13 @@ const User = require("../model/user");
 
 const auth=async (req,res,next)=>{
     try{
-        console.log(req)
+        console.log(req.headers)
         console.log(req.body.headers)
         //for postman = req.header("Authorization").replace("Bearer ",'')
         //for server = req.body.headers.Authorization.replace("Bearer ",'');
-       const token= req.body.headers.Authorization.replace("Bearer ",'');
+       let token= req.body.headers?.Authorization.replace("Bearer ",'');
        if(token===undefined){
-        const token= req.headers.authorization.replace("Bearer ",'');
+         token=req.headers.authorization.replace("Bearer ",'');
        }
        console.log(token+"token")
        const decode=jwt.verify(token,process.env.Secret_Key);
