@@ -3,9 +3,10 @@ const User =require("../model/user");
 const Order=require("../model/Order");
 const Item=require("../model/Item");
 const bcrypt=require("bcrypt");
+const Razorpay=require('razorpay')
+const crypto = require("crypto")
 
-
-
+const razorpay = new Razorpay({ key_id:process.env.RAZOR_PAY_KEY_ID, key_secret:process.env.RAZOR_PAY_KEY_SECRET });
 
 module.exports={
     async GetUser(req,res){
@@ -90,10 +91,26 @@ module.exports={
        delete itemobject.care
        dataitem.push(itemobject)
       })
-   try{
+      var options = {
+         amount: total,  // amount in the smallest currency unit
+         currency: "INR",
+         receipt: "order_rcptid_11"
+       };
+    try{
       ///for better authentication check with paymentToken
           if(user){
-               const order=await Order.create({Paymentstatus:"pending",userid:user_id,total})
+             const razorpayorder=await razorpay.orders.create(options)
+               const order=await Order.create({
+                   Paymentstatus:"pending",
+                   OrderId:razorpayorder?.id,
+                   userid:user_id,
+                   total:(total/100),
+                   currency:razorpayorder?.currency,
+                   receipt:razorpayorder?.receipt,
+                   status:razorpayorder?.status,
+                   attempts:razorpayorder?.attempts,
+                   amountPaid:razorpayorder?.amount_paid
+               })
                 const use=await User.findById(user._id).populate('orders').exec()
                 Order.findById(order._id).exec(function (err, doc) {
                     doc["productsdata"]=dataitem
@@ -101,7 +118,7 @@ module.exports={
                     doc.save()
                   })
                   await order.save()
-               return res.status(200).json({order,use});
+               return res.status(200).json(order);
           }else{
              return res.status(401).json({message:"user not exist"})
           }
@@ -111,17 +128,28 @@ module.exports={
 },
 async OrderConfirmation(req,res){
    const user=req.user;
-   const {paymentStatus,description}=req.body;
+   const {razorpay_order_id,razorpay_payment_id,razorpay_signature}=req.body;
    const {order_id}=req.body.headers;
-   console.log(paymentStatus,description,order_id)
+   console.log(order_id)
    try{
       if(user){
+         checkcode = razorpay_order_id + "|" + razorpay_payment_id;     
+         // //generate signature key
+         var expectedSignature =crypto
+         .createHmac("sha256", process.env.RAZOR_PAY_KEY_SECRET)
+         .update(checkcode.toString())
+         .digest("hex");
+         if (expectedSignature === razorpay_signature){
          const order=await Order.findById(order_id)
-         order.Paymentstatus='failed'
-         order.description=description
+         order.Paymentstatus='success'
+         order.amountPaid="paid"
+         order.description=`order ${order._id} with UserId${user._id} is placed successfully`
+         order.razorPaymentId=razorpay_payment_id
          await order.save();
          return res.json(order);
-        }
+         }
+         return res.status(400).json({message:`payment of user ${user._id} for order ${order_id} failed` })
+      }
        return res.status(401).json({message:"user not exist"})
    }catch(error){
       return res.status(401).json({message:error})
@@ -133,13 +161,6 @@ async GetUserOrder(req,res){
       ///for better authentication check with paymentToken
           if(user){
                 const UserOrders=await User.findById(user._id).populate('orders').exec()
-               //  const populateOrderItems=await UserOrders.orders.map(data=>(
-               //     data.products.map(async(data)=>{
-               //        populate(data).exec()
-               //       const item =await Item.findById(data)//  await Item.findById(data)
-               //     })
-               //  ))
-
                return res.status(200).json({UserOrders});
           }else{
              return res.status(401).json({message:"user not exist"})
@@ -162,3 +183,9 @@ async GetUserOrder(req,res){
 //    console.log(doc)
 //    doc.save()
 //  })
+// , (err, order)=> {
+//    if(err){
+//      return  res.status(400).json({message:"something went wrong"});
+//    }
+//     res.json(order);
+// })

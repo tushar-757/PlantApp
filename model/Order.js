@@ -5,6 +5,28 @@ const OrderSchema=new mongoose.Schema({
     Paymentstatus:{
         type:String
     },
+    OrderId:{
+        type:String,
+        required:true
+    },
+    razorPaymentId:{
+        type:String
+    },
+    currency:{
+        type:String
+    },
+    receipt:{
+        type:String
+    },
+    status:{
+        type:String
+    },
+    attempts:{
+        type:String
+    },
+    amountPaid:{
+        type:String
+    },
     description:{
         type:String
     },
