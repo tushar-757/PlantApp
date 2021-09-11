@@ -126,10 +126,31 @@ module.exports={
            return res.status(404).json({message:error})
       }
 },
+async DeleteOrder(req,res){
+   const user=req.user;
+   let order_id=req.body?.headers?.order_id
+   if(order_id===undefined){
+      order_id=req?.headers?.order_id
+   }
+   console.log(order_id)
+   try{
+      if(user){
+         console.log(order_id)
+         const order=await Order.findByIdAndDelete(order_id)
+         return res.json({message:"deleted succesfully"});
+      }
+      return res.status(401).json({message:"user not exist"})
+   }catch(e){
+      return res.status(401).json({message:e})
+         }
+},
 async OrderConfirmation(req,res){
    const user=req.user;
    const {razorpay_order_id,razorpay_payment_id,razorpay_signature}=req.body;
-   const {order_id}=req.body.headers;
+   let {order_id}=req.body?.headers
+   if(order_id===undefined){
+      order_id=req?.headers?.order_id
+   }
    console.log(order_id)
    try{
       if(user){
@@ -189,3 +210,5 @@ async GetUserOrder(req,res){
 //    }
 //     res.json(order);
 // })
+
+

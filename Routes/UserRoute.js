@@ -14,6 +14,7 @@ router.get("/",(req,res)=>{
 router.post("/createOrder",auth,UserController.CreateOrder);
 router.get("/GetOrders",auth,UserController.GetUserOrder);
 router.post("/OrderConfirmation",auth,UserController.OrderConfirmation);
+router.delete("/DeleteOrder",auth,UserController.DeleteOrder);
 
 //call back handler for razorpay
 //save all info in plan creted with user with user_id
