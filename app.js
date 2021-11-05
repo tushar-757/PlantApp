@@ -71,12 +71,12 @@ app.use(EmployeeRouter)
 //send otp to customer on mobile confirmation
 //send otp to customer for recieving package
 
-// const PORT=process.env.PORT ||5000
-// app.listen(PORT,(err)=>{
-//     if(err){
-//         console.log(err)
-//     }else{
-//         console.log('listening on port 5000')
-//     }
-// })
-module.exports.handler = serverless(app);
+const PORT=process.env.PORT ||5000
+app.listen(PORT,(err)=>{
+    if(err){
+        console.log(err)
+    }else{
+        console.log('listening on port 5000')
+    }
+})
+// module.exports.handler = serverless(app);
