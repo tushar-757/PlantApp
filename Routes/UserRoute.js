@@ -1,11 +1,9 @@
 const express=require("express");
 const router = express.Router();
 const auth=require("../middlewares/auth")
-const UserController=require("../Controllers/UserController")
-
+const UserController=require("../Controllers/UserController");
 //get users
 require('dotenv').config()
-
 router.get("/",(req,res)=>{
     res.render("index")
 })
@@ -13,7 +11,7 @@ router.get("/",(req,res)=>{
 //create order id for razorpay
 router.post("/createOrder",auth,UserController.CreateOrder);
 router.get("/GetOrders",auth,UserController.GetUserOrder);
-router.post("/OrderConfirmation",auth,UserController.OrderConfirmation);
+router.put("/OrderConfirmation",auth,UserController.OrderConfirmation);
 router.delete("/DeleteOrder",auth,UserController.DeleteOrder);
 
 //call back handler for razorpay
@@ -22,15 +20,18 @@ router.delete("/DeleteOrder",auth,UserController.DeleteOrder);
 
 //get loggedin user info
 router.get("/user",auth,UserController.GetUser);
-
+router.post("/userreview",auth,UserController.sendCustomerReviews);
 //sign-up
 router.post("/user/Register",UserController.Register);
+router.delete("/user/DeleteAccount",auth,UserController.DeleteAccount);
+router.put("/user/ResetPassword",UserController.ResetPassword);
 
 //login
 router.post("/user/login",UserController.Login);
+router.put("/user/UpdateUser",auth,UserController.UpdateUser);
+router.put("/user/UpdateUserAddress",auth,UserController.UpdateAddressUser);
+router.put("/user/UpdateUserOrderDate",auth,UserController.ChangeOrderDelieveryDate);
 
-//check plan before activation
-router.post("/user/CHECKPLAN",auth,UserController.CheckOrder);
 
 //activate-plan
 

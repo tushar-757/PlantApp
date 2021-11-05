@@ -2,9 +2,16 @@ const mongoose =require("mongoose");
 const validator=require("validator");
 
 const ItemSchema=new mongoose.Schema({
+    SKU:{
+        type:String,
+    required:true},
     name:{
         type:String,
-         required:true       
+         required:true
+    },
+    likes:{
+        type:Number,
+        default:0
     },
     type:{
         type:String,
@@ -20,8 +27,10 @@ const ItemSchema=new mongoose.Schema({
     },
     images:[{
         type:String,
-        required:true
     }],
+    customImages:[{
+          type:String,
+        }],
     care:{
         type:String,
         required:true
@@ -29,7 +38,8 @@ const ItemSchema=new mongoose.Schema({
     quantity:{
         type:Number,
         required:true
-    }
+    },
+    date:String
 })
 
 module.exports= mongoose.model("Item",ItemSchema);

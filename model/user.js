@@ -4,12 +4,7 @@ const validator=require("validator");
 const userSchema=new mongoose.Schema({
     username:{
         type:String,
-        trim:true,
-        validate(value){
-            if(!validator.isAlphanumeric(value)){
-                throw new Error('username is not valid');
-            }
-        }
+        trim:true
     },email:{
         type:String,
         unique:true,
@@ -70,6 +65,11 @@ userSchema.methods.GenerateAuthToken = async function(){
 
 userSchema.virtual('orders',{
     ref:"Order",
+    localField:'_id',
+    foreignField:'userid'
+})
+userSchema.virtual('CustomerReviews',{
+    ref:"CustomerReview",
     localField:'_id',
     foreignField:'userid'
 })

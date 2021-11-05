@@ -1,9 +1,14 @@
 const express=require('express');
 const mongoose=require('mongoose')
+const serverless = require('serverless-http');
 const cors=require("cors");
 const app=express();
 const UserRouter=require("./Routes/UserRoute");
+const AdminRouter=require("./Routes/AdminRoutes");
+const EmployeeRouter=require("./Routes/EmployeeRoutes");
 const Item =require("./model/Item");
+const ProductRouter=require('./Routes/ProductRoutes');
+const path=require('path')
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -17,31 +22,44 @@ mongoose.connect(url,{ useNewUrlParser: true ,useUnifiedTopology: true },(err)=>
         console.log("connected too db");
     }
 })
+// const SES_CONFIG = {
+//     accessKeyId:process.env.AWS_SES_KEY,
+//     secretAccessKey:process.env.AWS_SES_SECRET,
+//     region: 'ap-south-1',
+// };
+
+// const AWS_SES = new AWS.SES(SES_CONFIG);
+
 app.get("/",(req,res)=>{
     res.send("hello")
 })
 
+
 app.use(cors({origin: true, credentials: true}));
 app.use(express.json());
+app.use('/images', express.static('static'))
 // app.set("view engine",'hbs');
 // app.use(express.urlencoded({extended:false}))
+app.use(AdminRouter)
 app.use(UserRouter)
+app.use(ProductRouter)
+app.use(EmployeeRouter)
 
-app.post("/plant",async (req,res)=>{
-    const {name,type,price,description,images,care,quantity}=req.body;
-    try{
-        // const user= await User.create({name,email});
-       const item=await Item.create({name,type,price,description,images,care,quantity});
-       return res.status(201).json(item)
-    }catch(e){
-        console.log(e);
-        return res.status(400).json({message:"failed to save"});
-    }
-})
+// app.post("/plant",async (req,res)=>{
+//     const {name,type,price,description,images,care,quantity}=req.body;
+//     try{
+//         // const user= await User.create({name,email});
+//        const item=await Item.create({name,type,price,description,images,care,quantity});
+//        return res.status(201).json(item)
+//     }catch(e){
+//         console.log(e);
+//         return res.status(400).json({message:"failed to save"});
+//     }
+// })
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require('twilio')(accountSid, authToken);
+// const accountSid = process.env.TWILIO_ACCOUNT_SID;
+// const authToken = process.env.TWILIO_AUTH_TOKEN;
+// const client = require('twilio')(accountSid, authToken);
 
 // client.messages
 //   .create({
@@ -51,13 +69,14 @@ const client = require('twilio')(accountSid, authToken);
 //    })
 //   .then(message => console.log(message.sid));
 //send otp to customer on mobile confirmation
-//send otp to customer for recieving package 
+//send otp to customer for recieving package
 
-const PORT=process.env.PORT ||5000
-app.listen(PORT,(err)=>{
-    if(err){
-        console.log(err)
-    }else{
-        console.log('listening on port 5000')
-    }
-})
+// const PORT=process.env.PORT ||5000
+// app.listen(PORT,(err)=>{
+//     if(err){
+//         console.log(err)
+//     }else{
+//         console.log('listening on port 5000')
+//     }
+// })
+module.exports.handler = serverless(app);

@@ -21,8 +21,16 @@ const OrderSchema=new mongoose.Schema({
     status:{
         type:String
     },
+    scheduled:{
+       type:Boolean
+    },
     attempts:{
         type:String
+    },
+    shippingAddress:Object,
+    location:Object,
+    code:{
+      type:String
     },
     amountPaid:{
         type:String
@@ -33,6 +41,18 @@ const OrderSchema=new mongoose.Schema({
     userid:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
+    },
+    employeeid:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Employee"
+    },
+    Active:{
+        type:Boolean,
+        default:true
+    },
+    userRequestedDate:{
+        type:String,
+        default:null
     },
     total:{
         type:Number

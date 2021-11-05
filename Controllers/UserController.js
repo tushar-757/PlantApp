@@ -1,12 +1,18 @@
 require('dotenv').config()
 const User =require("../model/user");
 const Order=require("../model/Order");
-const Item=require("../model/Item");
-const bcrypt=require("bcrypt");
+const Indoor=require("../model/Indoor");
+const Planter=require("../model/Planters");
+const Seasonal=require("../model/Seasonal");
+const bcrypt=require('bcryptjs');
 const Razorpay=require('razorpay')
-const crypto = require("crypto")
-
+const crypto = require("crypto");
+const Outdoor = require('../model/Outdoor');
+const EmailController= require('./EmailController');
+const { resolve } = require('path');
+const CustomerReviews = require('../model/CustomerReviews');
 const razorpay = new Razorpay({ key_id:process.env.RAZOR_PAY_KEY_ID, key_secret:process.env.RAZOR_PAY_KEY_SECRET });
+
 
 module.exports={
     async GetUser(req,res){
@@ -19,19 +25,23 @@ module.exports={
       }
      },
      async Register(req,res){
-        console.log(req)
         const {username,email,password,mobile,hno,society,pincode,detail}=req.body;
               try{
-                     if(username.length===0||email.length===0){
+                     if(username?.length===0||email?.length===0){
                         return res.status(400).json({message:"you must fill properly!!"})
                      }
+                     const user1=await User.findOne({email});
+                      if(user1){
+                         return res.status(200).json({message:"user already exist"});
+                        }
                         const hashedPassword=await bcrypt.hash(password,8);
                         const user= await User.create({username,email,password:hashedPassword,
                            mobile,Address:{
-                           hno,society,pincode,detail
+                              hno,society,pincode,detail
                            }});
-                        user.GenerateAuthToken();
-                       return res.status(200).json({user});
+                           user.GenerateAuthToken();
+                           EmailController.sendwelcomeemail2(user.email,user.username)
+                           return res.status(200).json({user});
                     }catch(error){
                        console.log(error)
                        return res.status(400).json({message:error});
@@ -39,86 +49,100 @@ module.exports={
         },
         async Login(req,res){
             const {email,password}=req.body;
-          try{ 
+          try{
               const user=await User.findOne({email});
-              console.log(user)
               if(!user){
-               return res.status(404).json({message:"check your credentials"});
+               return res.status(403).json({message:"check your credentials"});
               }
               const passwordcompare=await bcrypt.compare(password,user.password);
              console.log(passwordcompare)
               if(user && passwordcompare){
                 user.GenerateAuthToken();
+               //  EmailController.sendWelcomeEmail(user.email,user.username)
                 return res.status(200).json(user);
               }else {
-                return res.status(400).json({ message: 'check your credentials' })
+                return res.status(403).json({ message: 'check your credentials' })
              }
           }catch(error){
-             res.status(400).json({message:"check your credentials"})
+             console.log(error)
+             res.status(403).json({message:"check your credentials"})
           }
-       
-       },
-    
 
-  //first add auth middleware
-  async CheckOrder(req,res,next){
-   try{
-      const user=req.user;
-      ///for better authentication check with paymentToken
-          if(user.has_plan!=null){
-                req.planexist=true
-                next()
-          }else{
-               req.planexist=false
-                next()
-          }
-       }catch(error){
-           return res.status(200).json({message:"not found"})
-      }
-  },
+       },
   async CreateOrder(req,res){
      const user=req.user;
-     const {total,products}=req.body
+     const {total,products,customization,shippingAddress,lat,lng}=req.body
      const {user_id}=req.body.headers;
      const dataitem=[]
-     await products.map(async(data)=>{
-       const item=await Item.findById(data)
-       const itemobject=item.toObject()
-       delete itemobject.type
-       delete itemobject.images
-       delete itemobject.description
-       delete itemobject.quantity
-       delete itemobject.care
-       dataitem.push(itemobject)
-      })
-      var options = {
-         amount: total,  // amount in the smallest currency unit
-         currency: "INR",
-         receipt: "order_rcptid_11"
-       };
+
+     const setSource =async()=>{
+        try{
+           await Promise.all(products.map(async(data)=>{
+                 let item=await Indoor.findById(data.id)
+                 if(item===null){
+                   item=await Outdoor.findById(data.id)
+                   if(item===null){
+                      item=await Seasonal.findById(data.id)
+                      if(item===null){
+                         item=await Planter.findById(data.id)
+                         console.log(item?.quantity)
+                      }
+                   }
+                 }
+                 item.quantity=item.quantity-data.quantity
+                 await item.save()
+                 console.log(item)
+                 const itemobject=item.toObject()
+                 itemobject.addons=data.addons
+                 delete itemobject.type
+                 delete itemobject.images
+                 delete itemobject.customImages
+                 delete itemobject.description
+                 delete itemobject.quantity
+                 delete itemobject.care
+                 itemobject.quantity=data.quantity
+                 dataitem.push(itemobject)
+                }))
+              }catch(e){
+                 console.log(e)
+              }
+        }
+
     try{
       ///for better authentication check with paymentToken
           if(user){
+             const orders=await Order.find({})
+             var options = {
+               amount: total,  // amount in the smallest currency unit
+               currency: "INR",
+              receipt: `order_rcptid_${orders.length}`
+              };
              const razorpayorder=await razorpay.orders.create(options)
-               const order=await Order.create({
-                   Paymentstatus:"pending",
-                   OrderId:razorpayorder?.id,
-                   userid:user_id,
-                   total:(total/100),
-                   currency:razorpayorder?.currency,
-                   receipt:razorpayorder?.receipt,
-                   status:razorpayorder?.status,
-                   attempts:razorpayorder?.attempts,
-                   amountPaid:razorpayorder?.amount_paid
-               })
-                const use=await User.findById(user._id).populate('orders').exec()
-                Order.findById(order._id).exec(function (err, doc) {
-                    doc["productsdata"]=dataitem
-                    console.log(doc)
-                    doc.save()
+             setSource().then(async()=>{
+                console.log("inside async call"+dataitem)
+                  const order=await Order.create({
+                      Paymentstatus:"pending",
+                      OrderId:razorpayorder?.id,
+                      userid:user_id,
+                      total:(total/100),
+                      currency:razorpayorder?.currency,
+                      receipt:razorpayorder?.receipt,
+                      status:razorpayorder?.status,
+                      attempts:razorpayorder?.attempts,
+                      amountPaid:razorpayorder?.amount_paid,
+                      shippingAddress:shippingAddress,
+                      customization:customization,
+                      location:{lat:lat,lng:lng}
                   })
-                  await order.save()
-               return res.status(200).json(order);
+                   Order.findById(order._id).exec(function (err, doc) {
+                       doc["productsdata"]=dataitem
+                       console.log(doc)
+                       doc.save()
+                     })
+                     await order.save()
+                  return res.status(200).json(order);
+               }
+               )
           }else{
              return res.status(401).json({message:"user not exist"})
           }
@@ -128,18 +152,42 @@ module.exports={
 },
 async DeleteOrder(req,res){
    const user=req.user;
-   let order_id=req.body?.headers?.order_id
+   let order_id=req?.headers?.order_id
    if(order_id===undefined){
-      order_id=req?.headers?.order_id
+      order_id=req.body
    }
-   console.log(order_id)
+   const RestoreInventory=async()=>{
+      try{
+         const products=await Order.findById(order_id)
+         await Promise.all(products?.productsdata?.map(async(data)=>{
+         let item=await Indoor.findById(data._id)
+         if(item===null){
+         item=await Outdoor.findById(data._id)
+         if(item===null){
+            item=await Seasonal.findById(data._id)
+            if(item===null){
+               console.log(data._id)
+               item=await Planter.findById({_id:data._id})
+            }
+         }
+       }
+       item.quantity=item.quantity+data.quantity
+       await item.save()
+    }))
+   }catch(e){
+       reject("failed to do so"+e)
+    }
+   }
    try{
       if(user){
-         console.log(order_id)
-         const order=await Order.findByIdAndDelete(order_id)
-         return res.json({message:"deleted succesfully"});
+         RestoreInventory().then(async()=>{
+            const order=await Order.findByIdAndDelete(order_id)
+         }).then(()=>{
+            return res.json({message:"deleted succesfully"});
+         })
+      }else{
+         return res.status(401).json({message:"user not exist"})
       }
-      return res.status(401).json({message:"user not exist"})
    }catch(e){
       return res.status(401).json({message:e})
          }
@@ -151,10 +199,22 @@ async OrderConfirmation(req,res){
    if(order_id===undefined){
       order_id=req?.headers?.order_id
    }
-   console.log(order_id)
+
+    const FiveDigitNumberArray=[]
+    let FiveDigitOtp="";
+    const GenerateFiveDigitNumber=()=>{
+       for(let i=0;i<5;i++){
+          FiveDigitNumberArray[i]=generateRandom()
+       }
+        FiveDigitOtp = FiveDigitNumberArray.toString().replace(/,/g,'')
+    }
+    const generateRandom=()=>{
+     return Math.floor((Math.random() * 9) + 1)
+    }
+    GenerateFiveDigitNumber()
    try{
       if(user){
-         checkcode = razorpay_order_id + "|" + razorpay_payment_id;     
+         checkcode = razorpay_order_id + "|" + razorpay_payment_id;
          // //generate signature key
          var expectedSignature =crypto
          .createHmac("sha256", process.env.RAZOR_PAY_KEY_SECRET)
@@ -166,6 +226,9 @@ async OrderConfirmation(req,res){
          order.amountPaid="paid"
          order.description=`order ${order._id} with UserId${user._id} is placed successfully`
          order.razorPaymentId=razorpay_payment_id
+         order.code=FiveDigitOtp
+         order.scheduled=false
+         EmailController.sendOrderInvoiceEmail(user?.email,user?.username,order)
          await order.save();
          return res.json(order);
          }
@@ -190,6 +253,115 @@ async GetUserOrder(req,res){
            return res.status(404).json({message:error})
       }
 },
+async UpdateUser(req,res){
+     try{
+      const user=req.user;
+      const {username1,email1,mobile1}=req?.body;
+      if(user){
+         const userrecieve=await User.findById(user._id)
+           userrecieve.username=username1
+           userrecieve.email=email1
+           userrecieve.mobile=mobile1
+           await userrecieve.save()
+        return res.status(200).json(userrecieve);
+        }else{
+         return res.status(401).json({message:"user not exist"})
+       }
+     }catch(e){
+      return res.status(404).json({message:e})
+     }
+},
+async UpdateAddressUser(req,res){
+     try{
+      const user=req.user;
+      const {hno,society,pincode}=req?.body;
+      if(user){
+         const userrecieve=await User.findById(user._id)
+           userrecieve.Address.hno=hno
+           userrecieve.Address.society=society
+           userrecieve.Address.pincode=pincode
+           await userrecieve.save()
+        return res.status(200).json(userrecieve);
+        }else{
+         return res.status(401).json({message:"user not exist"})
+       }
+     }catch(e){
+      return res.status(404).json({message:error})
+     }
+},
+async DeleteAccount(req,res){
+   try{
+      const user=req.user;
+      if(user){
+         const userrecieve=await User.findById(user._id)
+         const UserOrders=await User.findById(user._id).populate('orders').exec()
+           await userrecieve.delete()
+           await UserOrders.delete()
+        return res.status(200).json({message:"deleted successfully"});
+        }else{
+         return res.status(401).json({message:"user not exist"})
+       }
+     }catch(e){
+      return res.status(404).json({message:error})
+     }
+},
+async ResetPassword(req,res){
+   try{
+      const {email,password}=req.body;
+      const user=await User.findOne({email})
+      if(user){
+         const hashedPassword=await bcrypt.hash(password,8);
+         user.password=hashedPassword
+         await user.save()
+         return res.status(200).json({message:"updated Successfully"});
+        }else{
+         return res.status(401).json({message:"User Not Exist"})
+       }
+   }catch(e){
+      console.log(e)
+      return res.status(404).json({message:e})
+   }
+},async ChangeOrderDelieveryDate(req,res){
+   const user=req.user;
+   let {order_id}=req.body?.headers
+   if(order_id===undefined){
+      order_id=req?.headers?.order_id
+   }
+   const {date}=req.body;
+   try{
+       if(user){
+         const UserOrders=await Order.findById(order_id);
+         if(UserOrders?.status!=created&&UserOrders.Active){
+            UserOrders.userRequestedDate=date;
+            await UserOrders.save()
+           return res.status(200).json({message:"updated Successfully"});
+         }
+         return res.status(200).json({message:"Your order is either Delievered or may be pending for payment"});
+      }
+         return res.status(401).json({message:"user not exist"})
+   }catch(e){
+      return res.status(404).json({message:e})
+   }
+},async sendCustomerReviews(req,res){
+   const user=req.user
+   const {description,rating,item}=req.body;
+   try{
+      if(user){
+         const data=await CustomerReviews.create({
+           userid:user._id,
+           username:user?.username,
+           description:description,
+           stars:rating,
+           ...item
+         })
+         return res.status(200).json(data);
+      }
+      return res.status(401).json({message:"user not exist register first"})
+   }catch(e){
+      console.log(e)
+      return res.status(404).json({message:e})
+   }
+}
 }
    // razorpay.payments.fetch(req.body.razorpay_payment_id).then(async (doc)=>{
    //    console.log(doc)
