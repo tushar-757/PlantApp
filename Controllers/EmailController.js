@@ -13,7 +13,7 @@ async sendwelcomeemail2(email,name){
     text: 'PRODUCT/SERVICE',
     html:`
     <div style="padding:2px;box-shadow:0px 0px 5px lightgrey;margin:10px">
-<img src="http://localhost:5000/images/TPGLOGO.png"
+<img src="http://thepetalglow-env.eba-vqrfgiyr.ap-south-1.elasticbeanstalk.com/images/TPGLOGO.png"
 style="width:150px;height:150px;padding:0px;padding-bottom:0;margin-bottom:0"/>
 <div style="padding:20px;padding-top:0">
     <h1 style="font-size:18px;margin-top:0px">Hello ${name},</h1>
@@ -21,7 +21,7 @@ style="width:150px;height:150px;padding:0px;padding-bottom:0;margin-bottom:0"/>
 <p style="font-size:0.8rem">ThePetalGlow is your destination for plants,planters and everything in between.we ship our healthy ,happy plants right to your door and and include simple care instructions with every plant</p>
 <p style="font-size:0.8rem">to kick start your indoor/outdoor forest,here's 15% off on your first order,just add this discount code to your cart at checkout</p>
 <p>In order for a better experience,order tracking and  info download our app from playstore</p>
-<img src="http://localhost:5000/images/gp.jpg"
+<img src="http://thepetalglow-env.eba-vqrfgiyr.ap-south-1.elasticbeanstalk.com/images/gp.jpg"
 style="height:180px;"/>
 <p style="color: #4caf50;">YAY15B_FF06</p>
 <div style="background: #009688;
@@ -70,7 +70,7 @@ unicode-range: U+0900-097F, U+1CD0-1CF6, U+1CF8-1CF9, U+200C-200D, U+20A8, U+20B
       <table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Poppins', sans-serif; box-sizing: border-box; font-size: 14px; border-radius: 3px; background-color: #fff; margin: 0; padding: 0; border: 1px solid #e9e9e9;margin-top:40px;margin-bottom:40px" bgcolor="#fff"><tr style=" box-sizing: border-box; font-size: 14px; margin: 0; padding: 0;"><td style=" box-sizing: border-box; font-size: 16px; vertical-align: top; text-align: left; margin: 0; padding: 30px;padding-top:0px" align="left" valign="top"> <table style="border-box; font-size: 17px; margin: 0; padding: 0;">
                   <tr>
               <td width="600" style=" box-sizing: border-box; font-size: 14px; vertical-align: top; display: block !important; max-width: 600px !important; clear: both !important; width: 100% !important; margin: 0 auto; padding: 0;" valign="top">
-<img _ngcontent-jvm-c14="" alt="ThePetalGlow" class="" height="184" src="http://localhost:5000/images/TPGLOGO.png" width="184" style="margin-left:-25px;padding:0px"></td></tr>
+<img _ngcontent-jvm-c14="" alt="ThePetalGlow" class="" height="184" src="http://thepetalglow-env.eba-vqrfgiyr.ap-south-1.elasticbeanstalk.com/images/TPGLOGO.png" width="184" style="margin-left:-25px;padding:0px"></td></tr>
               </table>
       <p class="text-center" style="margin-top:0px">hi ${name},Use below OTP (One Time Password) for your order verification.</p>
 <h2 class="text-center"><span style="color: rgb(45, 44, 241);">${order?.code}</span></h2>
