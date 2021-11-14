@@ -50,7 +50,7 @@ app.use(function(req, res, next) {
     res.setHeader('Access-Control-Allow-Credentials', true);
 
     // Pass to next layer of middleware
-   if(req.hostname==="thepetalglow"){
+   if(req.hostname==="api.thepetalglow.com"){
        console.log(req)
     console.log(req.hostname+"hostname")
         next();
