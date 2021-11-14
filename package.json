@@ -12,7 +12,6 @@
   "dependencies": {
     "@sendgrid/mail": "^7.5.0",
     "bcryptjs": "^2.4.3",
-    "cloudflare-scraper": "^1.0.8",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
     "dotenv": "^10.0.0",
@@ -23,7 +22,6 @@
     "mongoose": "^6.0.12",
     "nice-invoice": "^1.1.5",
     "nodemon": "^2.0.14",
-    "puppeteer": "^11.0.0",
     "razorpay": "^2.0.6",
     "serverless-http": "^2.7.0",
     "validator": "^13.6.0"
