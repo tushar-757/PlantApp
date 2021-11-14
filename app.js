@@ -1,8 +1,10 @@
 const express=require('express');
 const mongoose=require('mongoose')
 const serverless = require('serverless-http');
+const cloudflareScraper = require('cloudflare-scraper');
 const cors=require("cors");
 const app=express();
+const helmet = require('helmet');
 const UserRouter=require("./Routes/UserRoute");
 const AdminRouter=require("./Routes/AdminRoutes");
 const EmployeeRouter=require("./Routes/EmployeeRoutes");
@@ -12,7 +14,7 @@ const rateLimit = require("express-rate-limit")
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
-
+app.use(helmet());
 const url=`mongodb+srv://${process.env.user}:${process.env.password}@cluster0.d93yj.mongodb.net/PlantApp?retryWrites=true&w=majority`;
 mongoose.connect(url,{ useNewUrlParser: true ,useUnifiedTopology: true },(err)=>{
     if(err){
@@ -28,34 +30,48 @@ const limiter = rateLimit({
   });
 app.use(limiter);
 
-var corsOptions = {
-    origin: '*',
-    optionsSuccessStatus: 200 // For legacy browser support
-}
-app.use(cors(corsOptions));
-
+// var corsOptions = {
+//     origin: '*',
+//     optionsSuccessStatus: 200 // For legacy browser support
+// }
+// app.use(cors(corsOptions));
+(async () => {
+    try {
+      const response = await cloudflareScraper.get('https://cloudflare-url.com');
+      console.log(response);
+    } catch (error) {
+      console.log(error);
+    }
+  })();
 app.use(function(req, res, next) {
     // Website you wish to allow to connect
     console.log(req.ip,req.url)
-    // res.setHeader('Access-Control-Allow-Origin', 'https://thepetalglow.com/');
+    var origin = req.get('origin');
+    if(origin=="https://thepetalglow.com"||origin=="https://www.thepetalglow.com"||origin=="https://api.thepetalglow.com"){
+        res.setHeader('Access-Control-Allow-Origin',origin);
+           // Request methods you wish to allow
+       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
-    // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+       // Request headers you wish to allow
+       res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
 
-    // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+     // Set to true if you need the website to include cookies in the requests sent
+     // to the API (e.g. in case you use sessions)
+     res.setHeader('Access-Control-Allow-Credentials', true);
+          next()
+    }else{
+      return res.send("Access Denied")
+    }
 
-    // Set to true if you need the website to include cookies in the requests sent
-    // to the API (e.g. in case you use sessions)
-    res.setHeader('Access-Control-Allow-Credentials', true);
+
 
     // Pass to next layer of middleware
-   if(req.hostname==="api.thepetalglow.com"){
-        next();
-    }else{
-        console.log("Access Denied")
-        res.send("Access Denied")
-    }
+//    if(req.hostname==="api.thepetalglow.com"){
+        // next();
+//     }else{
+//         console.log("Access Denied")
+//         res.send("Access Denied")
+//     }
   });
 app.get("/",(req,res)=>{
     res.send("hello")

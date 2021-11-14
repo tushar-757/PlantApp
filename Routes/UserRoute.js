@@ -28,7 +28,7 @@ const createresetPasswordLimiter = rateLimit({
   });
 const createorderLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour window
-    max: 10, // start blocking after 5 requests
+    max: 10, // start blocking after 10 requests
     message:
       "Too many Create Order requests created from this Account  IP, please try again after an hour"
   });
@@ -36,7 +36,7 @@ const createorderLimiter = rateLimit({
 router.post("/createOrder",createorderLimiter,auth,UserController.CreateOrder);
 router.get("/GetOrders",auth,UserController.GetUserOrder);
 router.put("/OrderConfirmation",auth,UserController.OrderConfirmation);
-router.delete("/DeleteOrder",auth,UserController.DeleteOrder);
+router.put("/DeleteOrder",auth,UserController.DeleteOrder);
 
 //call back handler for razorpay
 //save all info in plan creted with user with user_id
