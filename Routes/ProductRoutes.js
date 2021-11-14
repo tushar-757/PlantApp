@@ -9,4 +9,5 @@ router.get("/PlantGiene/SeasonalProducts",ProductController.GetSeasonalProducts)
 router.get("/PlantGiene/PlanterProducts",ProductController.GetPlanterProducts)
 router.get("/PlantGiene/",ProductController.GetSeasonalProducts)
 router.put("/PlantGiene/UpdateProduct",ProductController.UpdateProduct)
+router.put("/PlantGiene/UpdateCustomProduct",ProductController.UpdateCustomizationProduct)
 module.exports=router;

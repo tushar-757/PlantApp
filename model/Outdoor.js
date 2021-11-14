@@ -21,6 +21,14 @@ const OutdoorSchema=new mongoose.Schema({
         type:Number,
         required:true
     },
+    potIncluded:{
+        price:{
+            type:Number
+        },
+        isPotIncluded:{
+            type:Boolean
+        }
+    },
     description:{
         type:String,
         required:true

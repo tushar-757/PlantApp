@@ -52,16 +52,20 @@ const PlanterSchema=new mongoose.Schema({
         type:String,
         required:true
     },
-    indoorcustomid:{
+    indoorcustomid:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Indoor"
-    },outdoorcustomid:{
+    }],outdoorcustomid:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Outdoor"
-    },seasonalcustomid:{
+    }],seasonalcustomid:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Seasonal"
-    },
+    }],
+    succulentcustomid:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Seasonal"
+    }],
     images:[{
         type:String,
     }],

@@ -6,6 +6,8 @@ const Indoor=require("../model/Indoor");
 const Outdoor=require("../model/Outdoor");
 const Seasonal=require("../model/Seasonal");
 const CustomerReview=require("../model/CustomerReviews");
+const CustomerQueries=require("../model/CustomerQueries");
+const BugReporting=require("../model/BugReporting");
 
 module.exports={
     async GetUsers(req,res){
@@ -57,7 +59,7 @@ module.exports={
 }
 },
 async AddIndoorProduct(req,res){
-  const { SKU,name,type, description,Images,CustomImages,price,care, quantity ,date} = req.body
+  const { SKU,name,type, description,Images,price,care, quantity ,date} = req.body
 				try {
 					const event = await Indoor.create({
             SKU,
@@ -66,7 +68,6 @@ async AddIndoorProduct(req,res){
 						description,
 						images:Images,
 						price: parseFloat(price),
-						customImages:CustomImages,
             care,
             quantity,
             date
@@ -78,7 +79,7 @@ async AddIndoorProduct(req,res){
 				}
 },
 async AddOutdoorProduct(req,res){
-  const { SKU,name,type, description,Images,CustomImages,price,care, quantity ,date} = req.body
+  const { SKU,name,type, description,Images,price,care, quantity ,date} = req.body
 				try {
 					const event = await Outdoor.create({
             SKU,
@@ -87,7 +88,6 @@ async AddOutdoorProduct(req,res){
 						description,
 						images:Images,
 						price: parseFloat(price),
-						customImages:CustomImages,
             care,
             quantity,
             date
@@ -99,7 +99,7 @@ async AddOutdoorProduct(req,res){
 				}
 },
 async AddSeasonalProduct(req,res){
-  const { SKU,name,type, description,Images,CustomImages,price,care, quantity ,date} = req.body
+  const { SKU,name,type, description,Images,price,care, quantity ,date} = req.body
 				try {
 					const event = await Seasonal.create({
             SKU,
@@ -108,7 +108,6 @@ async AddSeasonalProduct(req,res){
 						description,
 						images:Images,
 						price: parseFloat(price),
-						customImages:CustomImages,
             care,
             quantity,
             date
@@ -268,26 +267,42 @@ async AddSeasonalProduct(req,res){
       }catch(e){
         return res.status(400).json({ message: e })
       }
+},async GetUserQueries(req,res){
+      try{
+           const data=await CustomerQueries.find({})
+           return res.status(200).json(data)
+      }catch(e){
+        return res.status(400).json({ message: e })
+      }
+},async CloseQuery(req,res){
+  let {query_id}=req.body?.headers
+  if(query_id===undefined){
+     query_id=req?.headers?.query_id
+  }
+  try{
+      const data=await CustomerQueries.findByIdAndDelete(query_id)
+      return res.status(200).json({message:"Query Closed And Deleted"})
+  }catch(e){
+    return res.status(400).json({ message: e })
+  }
+},
+async GetBugReports(req,res){
+      try{
+           const data=await BugReporting.find({})
+           return res.status(200).json(data)
+      }catch(e){
+        return res.status(400).json({ message: e })
+      }
+},async CloseBugReport(req,res){
+  let {bug_id}=req.body?.headers
+  if(bug_id===undefined){
+     bug_id=req?.headers?.bug_id
+  }
+  try{
+      const data=await CustomerQueries.findByIdAndDelete(bug_id)
+      return res.status(200).json({message:"Bug Query Closed And Deleted"})
+  }catch(e){
+    return res.status(400).json({ message: e })
+  }
 }
-
-    // async GetOrdersCreatedAt(req,res){
-    //     try{
-    //           const users= await Order.find({});
-    //          return res.status(200).json(users);
-    //       }catch(error){
-    //        return res.status(400).json({message:error});
-    //   }
-    // },
-    //create item,delete item,update item,update item quantity,
-    // async CreateProduct(req,res){
-    //   //name type price description images care quantity
-    //   const
-    //    try{
-    //         const product=await Item.create({
-
-    //         })
-    //    }catch(e){
-
-    //    }
-    // }
 }

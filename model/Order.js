@@ -38,6 +38,11 @@ const OrderSchema=new mongoose.Schema({
     description:{
         type:String
     },
+    customization:[
+        {
+            type:String
+        }
+    ],
     userid:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"

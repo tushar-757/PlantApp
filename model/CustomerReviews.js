@@ -31,6 +31,9 @@ const CustomerReviewSchema=new mongoose.Schema({
 },Planterid:{
     type:mongoose.Schema.Types.ObjectId,
     ref:"Planter"
+},succulentid:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"Succulent"
 }
 })
 

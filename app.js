@@ -6,9 +6,8 @@ const app=express();
 const UserRouter=require("./Routes/UserRoute");
 const AdminRouter=require("./Routes/AdminRoutes");
 const EmployeeRouter=require("./Routes/EmployeeRoutes");
-const Item =require("./model/Item");
 const ProductRouter=require('./Routes/ProductRoutes');
-const path=require('path')
+const rateLimit = require("express-rate-limit")
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
@@ -27,15 +26,49 @@ mongoose.connect(url,{ useNewUrlParser: true ,useUnifiedTopology: true },(err)=>
 //     secretAccessKey:process.env.AWS_SES_SECRET,
 //     region: 'ap-south-1',
 // };
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 200 // limit each IP to 100 requests per windowMs
+  });
+app.use(limiter);
+const AWS_SES = new AWS.SES(SES_CONFIG);
+var corsOptions = {
+    origin: 'https://thepetalglow.com',
+    optionsSuccessStatus: 200 // For legacy browser support
+}
+app.use(cors(corsOptions));
+var corsOptions = {
+    origin:'https://thepetalglow.com',
+    optionsSuccessStatus: 200 // For legacy browser support
+}
+app.use(cors(corsOptions));
+app.use(function(req, res, next) {
+    // Website you wish to allow to connect
+    console.log(req.ip,req.url)
+    res.setHeader('Access-Control-Allow-Origin', 'https://thepetalglow.com');
 
-// const AWS_SES = new AWS.SES(SES_CONFIG);
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
 
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    // Pass to next layer of middleware
+   if(req.hostname==="thepetalglow"){
+        next();
+    }else{
+        res.send("Access Denied")
+    }
+  });
 app.get("/",(req,res)=>{
     res.send("hello")
 })
 
 
-app.use(cors({origin: true, credentials: true}));
 app.use(express.json());
 app.use('/images', express.static('static'))
 // app.set("view engine",'hbs');
@@ -71,12 +104,12 @@ app.use(EmployeeRouter)
 //send otp to customer on mobile confirmation
 //send otp to customer for recieving package
 
-// const PORT=process.env.PORT ||5000
-// app.listen(PORT,(err)=>{
-//     if(err){
-//         console.log(err)
-//     }else{
-//         console.log('listening on port 5000')
-//     }
-// })
-module.exports.handler = serverless(app);
+const PORT=process.env.PORT ||5000
+app.listen(PORT,(err)=>{
+    if(err){
+        console.log(err)
+    }else{
+        console.log('listening on port 5000')
+    }
+})
+// module.exports.handler = serverless(app);

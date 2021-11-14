@@ -24,6 +24,14 @@ const SeasonalSchema=new mongoose.Schema({
         type:Number,
         required:true
     },
+    potIncluded:{
+        price:{
+            type:Number
+        },
+        isPotIncluded:{
+            type:Boolean
+        }
+    },
     description:{
         type:String,
         required:true
@@ -47,6 +55,16 @@ const SeasonalSchema=new mongoose.Schema({
         default:false
     },
     date:String
+})
+SeasonalSchema.virtual('reviews',{
+    ref:"CustomerReview",
+    localField:'_id',
+    foreignField:'seasonalid'
+})
+SeasonalSchema.virtual('Customizations',{
+    ref:"Planter",
+    localField:'_id',
+    foreignField:'seasonalcustomid'
 })
 
 module.exports= mongoose.model("Seasonal",SeasonalSchema);

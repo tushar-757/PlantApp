@@ -4,10 +4,13 @@ const Order=require("../model/Order");
 const Indoor=require("../model/Indoor");
 const Planter=require("../model/Planters");
 const Seasonal=require("../model/Seasonal");
+const CustomerQueries=require("../model/CustomerQueries");
+const resetToken=require("../model/ResetToken");
 const bcrypt=require('bcryptjs');
 const Razorpay=require('razorpay')
 const crypto = require("crypto");
 const Outdoor = require('../model/Outdoor');
+const ReportBug = require('../model/BugReporting');
 const EmailController= require('./EmailController');
 const { resolve } = require('path');
 const CustomerReviews = require('../model/CustomerReviews');
@@ -35,12 +38,12 @@ module.exports={
                          return res.status(200).json({message:"user already exist"});
                         }
                         const hashedPassword=await bcrypt.hash(password,8);
-                        const user= await User.create({username,email,password:hashedPassword,
+                        // EmailController.sendwelcomeemail2(email,username)
+                        const user=await User.create({username,email,password:hashedPassword,
                            mobile,Address:{
                               hno,society,pincode,detail
-                           }});
+                           }})
                            user.GenerateAuthToken();
-                           EmailController.sendwelcomeemail2(user.email,user.username)
                            return res.status(200).json({user});
                     }catch(error){
                        console.log(error)
@@ -228,7 +231,7 @@ async OrderConfirmation(req,res){
          order.razorPaymentId=razorpay_payment_id
          order.code=FiveDigitOtp
          order.scheduled=false
-         EmailController.sendOrderInvoiceEmail(user?.email,user?.username,order)
+         // EmailController.sendOrderInvoiceEmail(user?.email,user?.username,order)
          await order.save();
          return res.json(order);
          }
@@ -305,15 +308,25 @@ async DeleteAccount(req,res){
       return res.status(404).json({message:error})
      }
 },
-async ResetPassword(req,res){
+async sendResetPasswordEmail(req,res){
    try{
-      const {email,password}=req.body;
+      const {email}=req.body;
       const user=await User.findOne({email})
       if(user){
-         const hashedPassword=await bcrypt.hash(password,8);
-         user.password=hashedPassword
-         await user.save()
-         return res.status(200).json({message:"updated Successfully"});
+         let resettoken = await resetToken.findOne({ userId: user._id });
+         if (!resettoken) {
+             resettoken = await new resetToken({
+                 userId: user._id,
+                 token: crypto.randomBytes(32).toString("hex"),
+             }).save();
+         }
+         const link = `http://localhost:3000/password-reset/${user._id}/${resettoken.token}`;
+          EmailController.passwordresetEmail(user.email, "Password reset", link);
+         return res.send("password reset link sent to your email account");
+         // const hashedPassword=await bcrypt.hash(password,8);
+         // user.password=hashedPassword
+         // await user.save()
+         // return res.status(200).json({message:"updated Successfully"});
         }else{
          return res.status(401).json({message:"User Not Exist"})
        }
@@ -321,7 +334,31 @@ async ResetPassword(req,res){
       console.log(e)
       return res.status(404).json({message:e})
    }
-},async ChangeOrderDelieveryDate(req,res){
+},async ResetPassword(req,res){
+   const {password}=req.body;
+   try{
+      const user = await User.findById(req.params.userId);
+       if(user){
+         const token = await resetToken.findOne({
+            userId: user._id,
+            token: req.params.token,
+        });
+        if (!token) {
+           return res.status(400).send({message:"Invalid link or expired"})
+         }
+         const hashedPassword=await bcrypt.hash(password,8);
+         user.password=hashedPassword
+         await user.save();
+         await token.delete();
+        return  res.status(200).send({message:"password reset sucessfully."});
+       }
+       return res.status(400).send({message:"invalid link or expired"});
+    }catch(e){
+      console.log(e)
+      return res.status(404).json({message:e})
+    }
+},
+async ChangeOrderDelieveryDate(req,res){
    const user=req.user;
    let {order_id}=req.body?.headers
    if(order_id===undefined){
@@ -331,7 +368,7 @@ async ResetPassword(req,res){
    try{
        if(user){
          const UserOrders=await Order.findById(order_id);
-         if(UserOrders?.status!=created&&UserOrders.Active){
+         if(UserOrders?.Paymentstatus!='pending' && UserOrders.Active===true){
             UserOrders.userRequestedDate=date;
             await UserOrders.save()
            return res.status(200).json({message:"updated Successfully"});
@@ -359,6 +396,38 @@ async ResetPassword(req,res){
       return res.status(401).json({message:"user not exist register first"})
    }catch(e){
       console.log(e)
+      return res.status(404).json({message:e})
+   }
+},async CustomerQueries(req,res){
+   const user=req.user
+   const {email,description,mobile}=req.body;
+   try{
+      if(user){
+         const data=await CustomerQueries.create({
+           email:email,
+           description:description,
+           mobile:mobile
+         })
+         return res.status(200).json({message:"Sent Successfully"});
+      }
+      return res.status(401).json({message:"user not exist register first"})
+   }catch(e){
+      return res.status(404).json({message:e})
+   }
+},async ReportaBug(req,res){
+   const user=req.user
+   const {email,description,mobile}=req.body;
+   try{
+      if(user){
+         const data=await ReportBug.create({
+           email:email,
+           description:description,
+           mobile:mobile
+         })
+         return res.status(200).json({message:"Sent Successfully"});
+      }
+      return res.status(401).json({message:"user not exist register first"})
+   }catch(e){
       return res.status(404).json({message:e})
    }
 }

@@ -22,4 +22,6 @@ router.post("/UpdateSesonalProduct",AdminController.UpdateSeasonalPlants);
 router.delete("/DeleteAdminOrder",AdminController.DeleteOrder);
 router.get("/GetOrderByDate",AdminController.GetOrderByDate);
 router.get("/GetOredrByUserId",AdminController.GetOrderByUserId);
+router.get("/GetCustomerQueries",AdminController.GetUserQueries)
+router.get("/GetCustomerBugQueries",AdminController.GetBugReports)
 module.exports=router;
