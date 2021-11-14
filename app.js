@@ -1,8 +1,6 @@
 const express=require('express');
 const mongoose=require('mongoose')
 const serverless = require('serverless-http');
-const cloudflareScraper = require('cloudflare-scraper');
-const cors=require("cors");
 const app=express();
 const helmet = require('helmet');
 const UserRouter=require("./Routes/UserRoute");
@@ -35,14 +33,7 @@ app.use(limiter);
 //     optionsSuccessStatus: 200 // For legacy browser support
 // }
 // app.use(cors(corsOptions));
-(async () => {
-    try {
-      const response = await cloudflareScraper.get('https://cloudflare-url.com');
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
-  })();
+
 app.use(function(req, res, next) {
     // Website you wish to allow to connect
     console.log(req.ip,req.url)
