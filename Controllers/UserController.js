@@ -156,7 +156,9 @@ module.exports={
 async DeleteOrder(req,res){
    const user=req.user;
    console.log(req)
-   let order_id=req?.headers?.order_id
+   console.log(req.headers)
+   console.log(req.body)
+   let order_id=req?.order_id
    if(order_id===undefined){
       order_id=req.body?.headers?.order_id
    }
