@@ -156,7 +156,7 @@ module.exports={
 async DeleteOrder(req,res){
    const user=req.user;
    let order_id=req?.headers?.order_id
-   console.log(order_id,req)
+   console.log(order_id)
    if(order_id===undefined){
       order_id=req?.body?.headers?.order_id
    }
@@ -180,7 +180,7 @@ async DeleteOrder(req,res){
        await item.save()
     }))
    }catch(e){
-       reject("failed to do so"+e)
+       console.log("failed to do so"+e)
     }
    }
    try{
