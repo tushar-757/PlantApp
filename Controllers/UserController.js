@@ -155,9 +155,10 @@ module.exports={
 },
 async DeleteOrder(req,res){
    const user=req.user;
-   let {order_id}=req.body?.headers
+   console.log(req)
+   let order_id=req?.headers?.order_id
    if(order_id===undefined){
-      order_id=req?.headers?.order_id
+      order_id=req.body?.headers?.order_id
    }
    console.log(order_id)
    const RestoreInventory=async()=>{
