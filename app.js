@@ -21,17 +21,13 @@ mongoose.connect(url,{ useNewUrlParser: true ,useUnifiedTopology: true },(err)=>
         console.log("connected too db");
     }
 })
-// const SES_CONFIG = {
-//     accessKeyId:process.env.AWS_SES_KEY,
-//     secretAccessKey:process.env.AWS_SES_SECRET,
-//     region: 'ap-south-1',
-// };
+
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 200 // limit each IP to 100 requests per windowMs
   });
 app.use(limiter);
-const AWS_SES = new AWS.SES(SES_CONFIG);
+
 var corsOptions = {
     origin: 'https://thepetalglow.com',
     optionsSuccessStatus: 200 // For legacy browser support
