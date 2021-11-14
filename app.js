@@ -51,11 +51,9 @@ app.use(function(req, res, next) {
 
     // Pass to next layer of middleware
    if(req.hostname==="api.thepetalglow.com"){
-       console.log(req)
-    console.log(req.hostname+"hostname")
         next();
     }else{
-        console.log(req.hostname+"hostname")
+        console.log("Access Denied")
         res.send("Access Denied")
     }
   });
