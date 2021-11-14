@@ -51,6 +51,7 @@ app.use(function(req, res, next) {
 
     // Pass to next layer of middleware
    if(req.hostname==="thepetalglow"){
+       console.log(req)
     console.log(req.hostname+"hostname")
         next();
     }else{
