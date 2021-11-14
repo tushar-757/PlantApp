@@ -64,9 +64,9 @@ app.use(function(req, res, next) {
 //         res.send("Access Denied")
 //     }
   });
-app.get("/",(req,res)=>{
-    res.send("hello")
-})
+// app.get("/",(req,res)=>{
+//     res.send("hello")
+// })
 
 
 app.use(express.json());
