@@ -29,7 +29,7 @@ const limiter = rateLimit({
 app.use(limiter);
 
 var corsOptions = {
-    origin: 'https://thepetalglow.com/',
+    origin: '*',
     optionsSuccessStatus: 200 // For legacy browser support
 }
 app.use(cors(corsOptions));
@@ -37,7 +37,7 @@ app.use(cors(corsOptions));
 app.use(function(req, res, next) {
     // Website you wish to allow to connect
     console.log(req.ip,req.url)
-    res.setHeader('Access-Control-Allow-Origin', 'https://thepetalglow.com/');
+    // res.setHeader('Access-Control-Allow-Origin', 'https://thepetalglow.com/');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -51,10 +51,10 @@ app.use(function(req, res, next) {
 
     // Pass to next layer of middleware
    if(req.hostname==="thepetalglow"){
-    console.log(req.hostname)
+    console.log(req.hostname+"hostname")
         next();
     }else{
-        console.log(req.hostname)
+        console.log(req.hostname+"hostname")
         res.send("Access Denied")
     }
   });
